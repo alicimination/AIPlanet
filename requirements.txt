@@ -1,4 +1,6 @@
 streamlit
+openai
+langchain
 faiss-cpu
 sentence-transformers
 sympy
