@@ -6,8 +6,6 @@ from dataclasses import dataclass
 from typing import Optional
 import tempfile
 
-from utils.local_paths import ensure_local_model_env
-
 
 @dataclass
 class ASRResult:
@@ -44,10 +42,9 @@ def transcribe_audio(uploaded_file, model_size: str = "base") -> ASRResult:
             tmp.write(uploaded_file.getvalue())
             audio_path = tmp.name
 
-        paths = ensure_local_model_env()
         import whisper
 
-        model = whisper.load_model(model_size, download_root=str(paths["whisper"]))
+        model = whisper.load_model(model_size)
         result = model.transcribe(audio_path)
         transcript = result.get("text", "").strip()
         confidence = 0.8 if transcript else 0.0
