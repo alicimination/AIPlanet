@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List
 import re
 
 from rag.retriever import RAGRetriever
@@ -24,26 +24,6 @@ class SolverAgent:
     def __init__(self):
         self.retriever = RAGRetriever()
 
-    def _normalize_question(self, question: str) -> str:
-        """Normalize common unicode math characters before parsing."""
-        return (
-            question.replace("−", "-")
-            .replace("—", "-")
-            .replace("–", "-")
-            .replace("＝", "=")
-            .replace("×", "*")
-        )
-
-    def _extract_equation(self, question: str) -> Optional[str]:
-        """Extract a solvable equation from mixed natural-language prompts."""
-        normalized = self._normalize_question(question)
-        # Prefer line/chunk containing '=' and at least one variable.
-        candidates = re.findall(r"([A-Za-z0-9\s\*\+\-\^\(\)\./]+=[A-Za-z0-9\s\*\+\-\^\(\)\./]+)", normalized)
-        for cand in candidates:
-            if re.search(r"[a-zA-Z]", cand):
-                return cand.strip()
-        return None
-
     def run(self, parsed_problem: Dict, strategy: str) -> SolverResult:
         question = parsed_problem["problem_text"]
         retrieved = self.retriever.retrieve(question, top_k=4)
@@ -61,19 +41,18 @@ class SolverAgent:
         steps: List[str] = []
         answer = "Could not derive a final answer automatically."
 
-        eq_expr = self._extract_equation(question)
-        if eq_expr:
-            res = solve_expression(eq_expr)
+        eq_match = re.search(r"([\w\*\+\-\^\(\)\s/]+=[\w\*\+\-\^\(\)\s/]+)", question)
+        if eq_match:
+            expr = eq_match.group(1).replace("^", "**")
+            res = solve_expression(expr)
             if res.success:
-                steps.append(f"Parsed equation: {eq_expr}")
+                steps.append(f"Parsed equation: {expr}")
                 steps.append(f"Solved roots using SymPy: {res.output}")
                 answer = str(res.output)
-            else:
-                steps.append(f"Equation parse failed: {res.error}")
         else:
             eval_match = re.search(r"simplify\s*:\s*(.+)$", question.lower())
             if eval_match:
-                expr = self._normalize_question(eval_match.group(1))
+                expr = eval_match.group(1).replace("^", "**")
                 res = evaluate_expression(expr)
                 if res.success:
                     steps.append(f"Simplified expression {expr}")

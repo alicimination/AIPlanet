@@ -6,17 +6,6 @@ Production-style Streamlit application for **JEE-style math solving** with:
 - Retrieval-Augmented Generation (RAG)
 - Human-in-the-loop controls
 - Persistent memory + similarity reuse
-- **Free local model stack** (no paid API requirement)
-
-## 100% Local/Free Runtime Design
-
-This project is configured so all model artifacts are stored in the repo folder:
-- `./models/huggingface`
-- `./models/sentence_transformers`
-- `./models/whisper`
-- `./models/paddle`
-
-`utils/local_paths.py` sets environment variables (`HF_HOME`, `SENTENCE_TRANSFORMERS_HOME`, `TRANSFORMERS_CACHE`, `PADDLE_HOME`) so downloads avoid global user paths.
 
 ## Architecture
 
@@ -38,18 +27,34 @@ Input (Text/Image/Audio)
 math-mentor/
 ├── app.py
 ├── agents/
+│   ├── parser_agent.py
+│   ├── intent_router.py
+│   ├── solver_agent.py
+│   ├── verifier_agent.py
+│   └── explainer_agent.py
 ├── rag/
+│   ├── ingest.py
+│   ├── retriever.py
+│   └── vector_store.py
 ├── multimodal/
+│   ├── image_ocr.py
+│   └── audio_asr.py
 ├── memory/
+│   ├── memory_store.py
+│   └── similarity_search.py
 ├── tools/
+│   └── python_math_tool.py
 ├── hitl/
+│   └── hitl_manager.py
 ├── knowledge_base/
+│   ├── algebra.md
+│   ├── calculus.md
+│   ├── probability.md
+│   ├── linear_algebra.md
+│   └── pitfalls.md
 ├── utils/
-│   ├── local_paths.py
 │   ├── prompts.py
 │   └── logging.py
-├── scripts/
-│   └── setup_local.sh
 ├── requirements.txt
 └── README.md
 ```
@@ -62,7 +67,17 @@ math-mentor/
 - **Audio**: Whisper transcription + math phrase normalization + user confirmation.
 
 ### 2) Parser Agent Output
-Produces structured JSON with topic, variables, constraints, ambiguity flag.
+Produces structured JSON:
+
+```json
+{
+  "problem_text": "...",
+  "topic": "probability",
+  "variables": ["x"],
+  "constraints": ["x > 0"],
+  "needs_clarification": false
+}
+```
 
 ### 3) RAG
 - KB markdown docs → chunking → sentence-transformer embeddings → FAISS storage.
@@ -97,23 +112,23 @@ SQLite stores:
 Similarity search retrieves similar solved problems to reuse patterns.
 OCR corrections are also stored.
 
-## Setup (venv-only, no global installs)
+## Setup
 
 ```bash
-bash scripts/setup_local.sh
+python -m venv .venv
 source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-> `sqlite3` is Python stdlib; no separate install required.
+> Note: `sqlite3` is part of Python standard library and does not need separate installation.
 
-### Optional OS packages
+### Optional system dependencies
 - Tesseract binary (if using pytesseract fallback)
 - FFmpeg (recommended for Whisper audio handling)
 
 ## Run
 
 ```bash
-source .venv/bin/activate
 streamlit run app.py
 ```
 
@@ -123,6 +138,11 @@ Compatible with:
 - Streamlit Cloud
 - HuggingFace Spaces (Streamlit SDK)
 
+For cloud deployment:
+1. Push repository.
+2. Set entrypoint to `app.py`.
+3. Ensure `requirements.txt` installs successfully.
+
 ## Notes
-- First run may download local models into `./models`.
+- For best OCR/ASR quality, use clear images and noise-free audio.
 - Solver has symbolic automation and fallback explanations; verifier + HITL protects reliability.

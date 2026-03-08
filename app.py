@@ -18,10 +18,7 @@ from memory.similarity_search import MemorySimilarity
 from multimodal.audio_asr import transcribe_audio
 from multimodal.image_ocr import extract_text_from_image
 from rag.ingest import ingest_knowledge_base
-from utils.local_paths import ensure_local_model_env
 
-
-ensure_local_model_env()
 
 st.set_page_config(page_title="Reliable Multimodal Math Mentor", page_icon="🧠", layout="wide")
 st.title("🧠 Reliable Multimodal Math Mentor")
