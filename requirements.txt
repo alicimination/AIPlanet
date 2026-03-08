@@ -1,0 +1,14 @@
+streamlit
+faiss-cpu
+sentence-transformers
+sympy
+paddleocr
+pytesseract
+openai-whisper
+python-dotenv
+numpy
+Pillow
+requests>=2.32.3
+urllib3<3,>=2.2.2
+charset-normalizer>=3.3.2,<4
+chardet<6
