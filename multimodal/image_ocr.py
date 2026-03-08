@@ -8,8 +8,6 @@ import tempfile
 
 from PIL import Image
 
-from utils.local_paths import ensure_local_model_env
-
 
 @dataclass
 class OCRResult:
@@ -37,15 +35,7 @@ def extract_text_from_image(uploaded_file) -> OCRResult:
     try:
         from paddleocr import PaddleOCR
 
-        paths = ensure_local_model_env()
-        ocr = PaddleOCR(
-            use_angle_cls=True,
-            lang="en",
-            show_log=False,
-            det_model_dir=str(paths["paddle"] / "det"),
-            rec_model_dir=str(paths["paddle"] / "rec"),
-            cls_model_dir=str(paths["paddle"] / "cls"),
-        )
+        ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
         result = ocr.ocr(image_path, cls=True)
         lines = []
         conf = []

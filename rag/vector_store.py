@@ -9,8 +9,7 @@ import pickle
 
 import faiss
 import numpy as np
-
-from utils.local_paths import ensure_local_model_env
+from sentence_transformers import SentenceTransformer
 
 
 @dataclass
@@ -26,10 +25,7 @@ class FaissVectorStore:
     def __init__(self, index_path: str = "rag/faiss.index", meta_path: str = "rag/faiss_meta.pkl"):
         self.index_path = Path(index_path)
         self.meta_path = Path(meta_path)
-        paths = ensure_local_model_env()
-        from sentence_transformers import SentenceTransformer
-
-        self.model = SentenceTransformer("all-MiniLM-L6-v2", cache_folder=str(paths["sentence_transformers"]))
+        self.model = SentenceTransformer("all-MiniLM-L6-v2")
         self.index = None
         self.metadatas: List[Dict[str, Any]] = []
 

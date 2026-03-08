@@ -6,8 +6,9 @@ from typing import List, Dict, Any
 import json
 
 import numpy as np
+from sentence_transformers import SentenceTransformer
+
 from memory.memory_store import MemoryStore
-from utils.local_paths import ensure_local_model_env
 
 
 class MemorySimilarity:
@@ -15,10 +16,7 @@ class MemorySimilarity:
 
     def __init__(self):
         self.store = MemoryStore()
-        paths = ensure_local_model_env()
-        from sentence_transformers import SentenceTransformer
-
-        self.model = SentenceTransformer("all-MiniLM-L6-v2", cache_folder=str(paths["sentence_transformers"]))
+        self.model = SentenceTransformer("all-MiniLM-L6-v2")
 
     def find_similar(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
         rows = self.store.get_recent(limit=200)
